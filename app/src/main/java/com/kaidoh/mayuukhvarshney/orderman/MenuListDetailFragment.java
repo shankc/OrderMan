@@ -14,6 +14,7 @@ import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.TableLayout.LayoutParams;
 import com.kaidoh.mayuukhvarshney.orderman.dummy.DummyContent;
+import java.util.ArrayList;
 /**
  * A fragment representing a single MenuList detail screen.
  * This fragment is either contained in a {@link MenuListListActivity}
@@ -25,8 +26,8 @@ public class MenuListDetailFragment extends Fragment {
      * The fragment argument representing the item ID that this fragment
      * represents.
      */
-    public static String[] CONTENT={"Dosa","Idly","Sambar","Masala Dosa"};
-    public static int[] ICONS={R.mipmap.black_image,R.mipmap.black_image,R.mipmap.black_image,R.mipmap.black_image};
+    ArrayList<String>CONTENT;//{"Dosa","Idly","Sambar","Masala Dosa"};
+   ArrayList<Integer>ICONS;//{R.mipmap.black_image,R.mipmap.black_image,R.mipmap.black_image,R.mipmap.black_image};
     private ImageAdapter adapter;
     GridView menuGrid;
     protected int mPhotoSize, mPhotoSpacing;
@@ -67,7 +68,16 @@ public class MenuListDetailFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.menu_and_order, container, false);
-
+CONTENT= new ArrayList<>();
+        ICONS= new ArrayList<>();
+        CONTENT.add("Idly");
+        CONTENT.add("Dosa");
+        CONTENT.add("Sambar");
+        CONTENT.add("Vada");
+        for(int i=0;i<4;i++)
+        {
+            ICONS.add(R.mipmap.black_image);
+        }
         // Show the dummy content as text in a TextView.
         mPhotoSize = getResources().getDimensionPixelSize(R.dimen.photo_size);
         mPhotoSpacing = getResources().getDimensionPixelSize(R.dimen.photo_spacing);

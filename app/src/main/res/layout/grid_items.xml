@@ -21,7 +21,8 @@
         android:layout_height="wrap_content"
         android:layout_alignBottom="@+id/cover"
         android:background="#70000000"
-        android:padding="6dp" >
+        android:padding="6dp"
+        android:weightSum="1">
 
         <TextView
             android:id="@+id/title"
@@ -30,9 +31,25 @@
             android:ellipsize="end"
             android:singleLine="true"
             android:textColor="#FBFBEF"
-            android:textSize="12sp"
+            android:textSize="15sp"
             android:typeface="monospace"
             android:textStyle="bold" />
+        <TextView
+
+            android:id="@+id/capacity"
+            android:layout_marginStart="50dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:singleLine="true"
+            android:textColor="#FBFBEF"
+            android:typeface="monospace"
+            android:layout_gravity="end"
+            android:textStyle="bold"
+            android:textSize="15sp"
+            android:ellipsize="end"
+
+            >
+        </TextView>
     </LinearLayout>
 
 </RelativeLayout>

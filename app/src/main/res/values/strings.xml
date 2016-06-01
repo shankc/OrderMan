@@ -1,4 +1,10 @@
 <resources>
     <string name="app_name">OrderMan</string>
     <string name="title_menulist_detail">MenuList Detail</string>
+    <string name="number_of_persons">Enter Number of People</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
 </resources>

@@ -10,23 +10,30 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".MenuListListActivity"
-            android:label="@string/app_name"
-            android:theme="@style/AppTheme.NoActionBar">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+            android:parentActivityName=".MainMenu">
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
         <activity
             android:name=".MenuListDetailActivity"
             android:label="@string/title_menulist_detail"
             android:parentActivityName=".MenuListListActivity"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/Theme.AppCompat.Light">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.kaidoh.mayuukhvarshney.orderman.MenuListListActivity" />
         </activity>
+
+        <activity android:name=".MainMenu"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.AppCompat.Light">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+
+            </intent-filter>
+        </activity>
     </application>
+
 
 </manifest>
