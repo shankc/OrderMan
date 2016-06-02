@@ -1,6 +1,7 @@
 package com.kaidoh.mayuukhvarshney.orderman;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,23 +11,22 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 /**
  * Created by mayuukhvarshney on 31/05/16.
  */
-public class ImageAdapter extends BaseAdapter {
+public class ItemsAdapter extends BaseAdapter {
     private LayoutInflater mInflater;
     private int mItemHeight = 0;
     private int mNumColumns = 0;
     private RelativeLayout.LayoutParams mImageViewLayoutParams;
     private int Len;
     //private int []ICONS=new int[4];
-   // private String[] CONTENT=new String[4];
-    ArrayList<Integer> ICONS;
-    ArrayList<Tables> CONTENT;
+    // private String[] CONTENT=new String[4];
+    ArrayList<Bitmap> ICONS;
+    ArrayList<MenuItems> CONTENT;
     protected Context mContext;
-    public ImageAdapter(Context context,ArrayList<Integer> img,ArrayList<Tables> txt) {
+    public ItemsAdapter(Context context,ArrayList<Bitmap> img,ArrayList<MenuItems> txt) {
         mContext=context;
         mInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         mImageViewLayoutParams = new RelativeLayout.LayoutParams(LayoutParams.FILL_PARENT,mItemHeight);
@@ -83,12 +83,13 @@ public class ImageAdapter extends BaseAdapter {
             cover.setLayoutParams(mImageViewLayoutParams);
         }
         //cover.setImageResource(ICONS[position % ICONS.length]);
-        Tables table = new Tables();
-        table = CONTENT.get(position);
-        String name= table.getName();
-        Picasso.with(mContext).load(ICONS.get(position % ICONS.size())).into(cover);
-        title.setText(CONTENT.get(position%CONTENT.size()).getName());
-        capcity.setText(CONTENT.get(position%CONTENT.size()).getCapacity());
+
+        //Picasso.with(mContext).load(ICONS.get(position % ICONS.size())).into(cover);
+      //  cover.setImageBitmap(ICONS.get(position%ICONS.size()));
+
+        cover.setImageBitmap(ICONS.get(position%ICONS.size()));
+        title.setText(CONTENT.get(position%CONTENT.size()).getItemName());
+        capcity.setText(CONTENT.get(position%CONTENT.size()).getPrice().toString());
 
 
         return view;

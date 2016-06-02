@@ -1,20 +1,32 @@
 package com.kaidoh.mayuukhvarshney.orderman;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Base64;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.GridView;
-import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
-import android.widget.TableLayout.LayoutParams;
-import com.kaidoh.mayuukhvarshney.orderman.dummy.DummyContent;
+import android.widget.TableLayout;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
+
 /**
  * A fragment representing a single MenuList detail screen.
  * This fragment is either contained in a {@link MenuListListActivity}
@@ -26,22 +38,21 @@ public class MenuListDetailFragment extends Fragment {
      * The fragment argument representing the item ID that this fragment
      * represents.
      */
-    ArrayList<String>CONTENT;//{"Dosa","Idly","Sambar","Masala Dosa"};
-   ArrayList<Integer>ICONS;//{R.mipmap.black_image,R.mipmap.black_image,R.mipmap.black_image,R.mipmap.black_image};
-    private ImageAdapter adapter;
+    ArrayList<MenuItems>CONTENT;//{"Dosa","Idly","Sambar","Masala Dosa"};
+   ArrayList<Bitmap>ICONS;//{R.mipmap.black_image,R.mipmap.black_image,R.mipmap.black_image,R.mipmap.black_image};
+    private ItemsAdapter adapter;
     GridView menuGrid;
     protected int mPhotoSize, mPhotoSpacing;
+    int quantiy=0;
+   EditText quantity_entered;
     public static final String ARG_ITEM_ID = "item_id";
-    TableLayout table;
-
+private String ID;
+    String ItemName="";
+    View rootView;
+    int count =0;
     TableRow tr_head;
     TextView label_name,label_intime,label_outtime;
-
-    /**
-     * The dummy content this fragment is presenting.
-     */
-    private DummyContent.DummyItem mItem;
-
+    int sum=0;
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
@@ -57,8 +68,11 @@ public class MenuListDetailFragment extends Fragment {
             // Load the dummy content specified by the fragment
             // arguments. In a real-world scenario, use a Loader
             // to load content from a content provider.
-            mItem = DummyContent.ITEM_MAP.get(getArguments().getString(ARG_ITEM_ID));
+          //  mItem = DummyContent.ITEM_MAP.get(getArguments().getString(ARG_ITEM_ID));
 
+            Bundle bundle = MenuListDetailFragment.this.getArguments();
+            ID=bundle.getString(ARG_ITEM_ID);
+            Log.d("MenuListFrag","the ID recvied is "+ID);
             Activity activity = this.getActivity();
 
         }
@@ -67,104 +81,99 @@ public class MenuListDetailFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.menu_and_order, container, false);
+        rootView = inflater.inflate(R.layout.menu_and_order, container, false);
 CONTENT= new ArrayList<>();
         ICONS= new ArrayList<>();
-        CONTENT.add("Idly");
-        CONTENT.add("Dosa");
-        CONTENT.add("Sambar");
-        CONTENT.add("Vada");
-        for(int i=0;i<4;i++)
-        {
-            ICONS.add(R.mipmap.black_image);
-        }
+
+sum=0;
         // Show the dummy content as text in a TextView.
-        mPhotoSize = getResources().getDimensionPixelSize(R.dimen.photo_size);
+        mPhotoSize = getResources().getDimensionPixelSize(R.dimen.photo_size);//
         mPhotoSpacing = getResources().getDimensionPixelSize(R.dimen.photo_spacing);
-        adapter= new ImageAdapter(getActivity(),ICONS,CONTENT);
-        menuGrid= (GridView) rootView.findViewById(R.id.grid_view1);
-        menuGrid.setAdapter(adapter);
-        menuGrid.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-                if (adapter.getNumColumns() == 0) {
-                    final int numColumns = (int) Math.floor(menuGrid.getWidth() / (mPhotoSize + mPhotoSpacing));
-                    if (numColumns > 0) {
-                        final int columnWidth = (menuGrid.getWidth() / numColumns);
-                        adapter.setNumColumns(numColumns);
-                        adapter.setItemHeight(columnWidth);
+     new GetMenuCardItems(){
+         @Override
+        protected void onPostExecute(ArrayList<MenuItems> array){
+             super.onPostExecute(array);
+
+             adapter= new ItemsAdapter(getActivity(),ICONS,CONTENT);
+             menuGrid= (GridView) rootView.findViewById(R.id.grid_view1);
+             menuGrid.setAdapter(adapter);
+             menuGrid.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                 @Override
+                 public void onGlobalLayout() {
+                     if (adapter.getNumColumns() == 0) {
+                         final int numColumns = (int) Math.floor(menuGrid.getWidth() / (mPhotoSize + mPhotoSpacing));
+                         if (numColumns > 0) {
+                             final int columnWidth = (menuGrid.getWidth() / numColumns);
+                             adapter.setNumColumns(numColumns);
+                             adapter.setItemHeight(columnWidth);
 
 
-                    }
-                }
-            }
-        });
-        table = (TableLayout) rootView.findViewById(R.id.main_table);
-        //  Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        //setSupportActionBar(toolbar);
-        tr_head = new TableRow(getActivity());
+                         }
+                     }
+                 }
+             });
 
-        tr_head.setId(R.id.worker_table);
-        tr_head.setBackgroundColor(Color.parseColor("#4D7AF9"));
-        tr_head.setLayoutParams(new LayoutParams(
-                LayoutParams.MATCH_PARENT,
-                LayoutParams.MATCH_PARENT));
+             menuGrid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                 @Override
+                 public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
+                     LayoutInflater factory = LayoutInflater.from(getActivity());
+                     final View deleteDialogView = factory.inflate(
+                             R.layout.quantity_dialog, null);
+                     final AlertDialog deleteDialog = new AlertDialog.Builder(getActivity()).create();
+                     deleteDialog.setView(deleteDialogView);
+                     deleteDialog.setTitle("Enter the Quantity?");
+                     quantity_entered= (EditText) deleteDialogView.findViewById(R.id.qnt_text);
+                     deleteDialogView.findViewById(R.id.dialogButtonOK).setOnClickListener(new View.OnClickListener() {
 
-        label_name = new TextView(getActivity());
-        label_name.setId(R.id.worker_name);
-        label_name.setText("Quantity");
-        label_name.setTextSize(12);
-        label_name.setTextColor(Color.BLACK);
-        label_name.setPadding(15, 15, 15, 15);
-        tr_head.addView(label_name);// add the column to the table row here
+                         @Override
+                         public void onClick(View v) {
+                             //your business logic
+                             String temp = quantity_entered.getText().toString();
+                             Log.d("MenuListFragment"," the quanitty tentered"+temp);
+                             quantiy=Integer.parseInt(temp);
+                             ItemName=CONTENT.get(position).getItemName();
+                             sum+=(quantiy*CONTENT.get(position).getPrice());
+                             deleteDialog.dismiss();
+                             getActivity().runOnUiThread(new Runnable() {
+                                 @Override
+                                 public void run() {
+                                     TableRow tr = new TableRow(getActivity());
+                                     tr.setId(100 + count);
+                                     tr.setLayoutParams(new TableLayout.LayoutParams(
+                                             TableLayout.LayoutParams.WRAP_CONTENT,
+                                             TableLayout.LayoutParams.WRAP_CONTENT));
 
-        label_intime = new TextView(getActivity());
-        label_intime.setId(R.id.worket_out);// define id that must be unique
-        label_intime.setText("Item-Name");
-         label_intime.setTextSize(12);
-        label_intime.setTextColor(Color.BLACK); // set the color
-        label_intime.setPadding(15, 15, 5, 15); // set the padding (if required)
-        tr_head.addView(label_intime);
+                                     TextView names = new TextView(getActivity());
+                                     names.setId(200 + count);
+                                     names.setText(Integer.toString(quantiy));
+                                     names.setPadding(55, 45, 45, 45);
+                                     names.setTextColor(Color.BLACK);
+                                     tr.addView(names);
 
-        table.addView(tr_head, new LayoutParams(
-                LayoutParams.WRAP_CONTENT,
-                LayoutParams.WRAP_CONTENT));
+                                     TextView in_time= new TextView(getActivity());
+                                     in_time.setId(200 + count);
+                                     in_time.setText((ItemName));
+                                     in_time.setPadding(55, 45, 45, 45);
+                                     in_time.setTextColor(Color.BLACK);
+                                     tr.addView(in_time);
+
+                                     ((MenuListListActivity)getActivity()).table.addView(tr, new TableLayout.LayoutParams(
+                                             TableLayout.LayoutParams.WRAP_CONTENT,
+                                             TableLayout.LayoutParams.WRAP_CONTENT));
+                                     count++;
+                                     ((MenuListListActivity)getActivity()).AmountToBePayed.setText(Integer.toString(sum));
+                                 }
+                             });
+
+                         }
+                     });
+                     deleteDialog.show();
+                 }
+             });
 
 
-        int count =0;
-        for(int i=0;i<10;i++)
-        {
-
-            String Name=Integer.toString(i);
-            String Intime = Integer.toString(i+10);
-            String OutTime=Integer.toString(i + 1000);
-// Create the table row
-            TableRow tr = new TableRow(getActivity());
-            tr.setId(100 + count);
-            tr.setLayoutParams(new LayoutParams(
-                    LayoutParams.WRAP_CONTENT,
-                    LayoutParams.WRAP_CONTENT));
-
-            TextView names = new TextView(getActivity());
-            names.setId(200 + count);
-            names.setText(Name);
-            names.setPadding(55,45,45,45);
-            names.setTextColor(Color.BLACK);
-            tr.addView(names);
-
-            TextView in_time= new TextView(getActivity());
-            in_time.setId(200 + count);
-            in_time.setText((Intime));
-            in_time.setPadding(55,45,45,45);
-            in_time.setTextColor(Color.BLACK);
-            tr.addView(in_time);
-
-            table.addView(tr, new TableLayout.LayoutParams(
-                    LayoutParams.WRAP_CONTENT,
-                    LayoutParams.WRAP_CONTENT));
-            count++;
-        }
-
+         }
+     }.execute();
 
         //if (mItem != null) {
           //  ((TextView) rootView.findViewById(R.id.menulist_detail)).setText(mItem.details);
@@ -172,5 +181,48 @@ CONTENT= new ArrayList<>();
     //}
 
         return rootView;
+    }
+
+    class GetMenuCardItems extends AsyncTask<Void,Void,ArrayList<MenuItems>>{
+
+        @Override
+        protected ArrayList<MenuItems> doInBackground(Void... params) {
+            String URL = Config.URL+"menu/GetMenuItems/"+ID;
+            String content = HttpManager.GetData(URL);
+            try{
+                JSONObject object = new JSONObject(content);
+                JSONArray array = object.getJSONArray("products");
+                JSONObject obj=null;
+                for(int i=0;i<array.length();i++){
+                    MenuItems items = new MenuItems();
+                    obj=array.getJSONObject(i);
+                    items.setId(obj.getString("productsku"));
+                    items.setCategoryId(obj.getString("categoryid"));
+                    items.setItemName(obj.getString("productname"));
+                    items.setItemDescription(obj.getString("productdesc"));
+                    items.setImage(obj.getString("image"));
+                    String temp = obj.getString("productprice");
+                    items.setPrice(Float.parseFloat(temp));
+                    Log.d("MenuListDetailFRagment"," the float is "+temp);
+                    CONTENT.add(items);
+                    ICONS.add(decodeBase64(obj.getString("image"))); // add a bitmap here !
+                }
+                return CONTENT;
+
+            }
+            catch(JSONException e){
+                e.printStackTrace();
+                return null;
+            }
+
+        }
+    }
+
+
+    public static Bitmap decodeBase64(String input)
+    {
+        byte[] decodedBytes = Base64.decode(input, Base64.DEFAULT);
+        return BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
+
     }
 }
