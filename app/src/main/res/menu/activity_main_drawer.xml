@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_camera"
+            android:icon="@drawable/ic_home_black_24dp"
+            android:title="Home" />
+        <item
+            android:id="@+id/nav_waitlist"
+            android:icon="@drawable/ic_wc_black_24dp"
+            android:title="Waiting List" />
+        <item
+            android:id="@+id/nav_slideshow"
+            android:icon="@drawable/ic_forward_black_24dp"
+            android:title="Place Order" />
+        <item
+            android:id="@+id/nav_manage"
+            android:icon="@drawable/ic_send_black_24dp"
+            android:title="Settle Order" />
+    </group>
+
+    <item android:title="Customer Relation">
+        <menu>
+            <item
+                android:id="@+id/nav_share"
+                android:icon="@drawable/ic_feedback_black_24dp"
+                android:title="Feedback" />
+
+        </menu>
+    </item>
+
+</menu>

@@ -11,7 +11,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
-
+import java.util.ArrayList;
 /**
  * Created by mayuukhvarshney on 31/05/16.
  */
@@ -21,24 +21,22 @@ public class ImageAdapter extends BaseAdapter {
     private int mNumColumns = 0;
     private RelativeLayout.LayoutParams mImageViewLayoutParams;
     private int Len;
-    private int []ICONS=new int[4];
-    private String[] CONTENT=new String[4];
+    //private int []ICONS=new int[4];
+   // private String[] CONTENT=new String[4];
+    ArrayList<Integer> ICONS;
+    ArrayList<Tables> CONTENT;
     protected Context mContext;
-    public ImageAdapter(Context context,int[] img,String[] txt) {
+    public ImageAdapter(Context context,ArrayList<Integer> img,ArrayList<Tables> txt) {
         mContext=context;
         mInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         mImageViewLayoutParams = new RelativeLayout.LayoutParams(LayoutParams.FILL_PARENT,mItemHeight);
-        for(int i=0;i<4;i++)
-        {
-            ICONS[i]=img[i];
-            CONTENT[i]=txt[i];
-        }
-
+        this.ICONS=img;
+        this.CONTENT=txt;
     }
 
 
     public int getCount() {
-        return CONTENT.length;
+        return CONTENT.size();
     }
 
     // set numcols
@@ -76,6 +74,7 @@ public class ImageAdapter extends BaseAdapter {
 
         ImageView cover = (ImageView) view.findViewById(R.id.cover);
         TextView title = (TextView) view.findViewById(R.id.title);
+        TextView capcity= (TextView) view.findViewById(R.id.capacity);
 
         cover.setLayoutParams(mImageViewLayoutParams);
 
@@ -84,8 +83,13 @@ public class ImageAdapter extends BaseAdapter {
             cover.setLayoutParams(mImageViewLayoutParams);
         }
         //cover.setImageResource(ICONS[position % ICONS.length]);
-        Picasso.with(mContext).load(ICONS[position%ICONS.length]).into(cover);
-        title.setText(CONTENT[position % CONTENT.length]);
+        Tables table = new Tables();
+        table = CONTENT.get(position);
+        String name= table.getName();
+        Picasso.with(mContext).load(ICONS.get(position % ICONS.size())).into(cover);
+        title.setText(CONTENT.get(position%CONTENT.size()).getName());
+        capcity.setText(CONTENT.get(position%CONTENT.size()).getCapacity());
+
 
         return view;
     }

@@ -2,9 +2,13 @@ package com.kaidoh.mayuukhvarshney.orderman;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.design.widget.NavigationView;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.MenuItem;
 
 /**
@@ -13,14 +17,30 @@ import android.view.MenuItem;
  * item details are presented side-by-side with a list of items
  * in a {@link MenuListListActivity}.
  */
-public class MenuListDetailActivity extends AppCompatActivity {
+public class MenuListDetailActivity extends AppCompatActivity implements  NavigationView.OnNavigationItemSelectedListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_menulist_detail);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.detail_toolbar);
-        setSupportActionBar(toolbar);
+        setContentView(R.layout.mainmenu_navi_drawer);
+
+
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+
+                MenuListDetailActivity.this, drawer, null, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        if(drawer!=null)
+        {
+            drawer.setDrawerListener(toggle);
+            toggle.syncState();}
+        else
+        {
+            Log.d("MainMenu", "the drawer has a probelm");
+        }
+
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(MenuListDetailActivity.this);
+
 
 
 
@@ -30,14 +50,6 @@ public class MenuListDetailActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
-        // savedInstanceState is non-null when there is fragment state
-        // saved from previous configurations of this activity
-        // (e.g. when rotating the screen from portrait to landscape).
-        // In this case, the fragment will automatically be re-added
-        // to its container so we don't need to manually add it.
-        // For more information, see the Fragments API guide at:
-        //
-        // http://developer.android.com/guide/components/fragments.html
         //
         if (savedInstanceState == null) {
             // Create the detail fragment and add it to the activity
@@ -52,7 +64,15 @@ public class MenuListDetailActivity extends AppCompatActivity {
                     .commit();
         }
     }
-
+    @Override
+    public void onBackPressed() {
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
+    }
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
@@ -67,5 +87,14 @@ public class MenuListDetailActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @SuppressWarnings("StatementWithEmptyBody")
+    @Override
+    public boolean onNavigationItemSelected(MenuItem item) {
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer.closeDrawer(GravityCompat.START);
+        return true;
+
     }
 }
