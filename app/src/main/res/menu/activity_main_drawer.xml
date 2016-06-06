@@ -3,28 +3,28 @@
 
     <group android:checkableBehavior="single">
         <item
-            android:id="@+id/nav_camera"
-            android:icon="@drawable/ic_menu_camera"
+            android:id="@+id/nav_home"
+            android:icon="@mipmap/ic_home_black_24dp"
             android:title="Home" />
         <item
-            android:id="@+id/nav_gallery"
-            android:icon="@drawable/ic_menu_gallery"
+            android:id="@+id/nav_waiting"
+            android:icon="@android:drawable/ic_lock_idle_alarm"
             android:title="Waiting List" />
         <item
-            android:id="@+id/nav_slideshow"
-            android:icon="@drawable/ic_menu_slideshow"
+            android:id="@+id/nav_placeorder"
+            android:icon="@mipmap/ic_send_black_24dp"
             android:title="Place Order" />
         <item
-            android:id="@+id/nav_manage"
-            android:icon="@drawable/ic_menu_manage"
+            android:id="@+id/nav_settle"
+            android:icon="@mipmap/ic_forward_black_24dp"
             android:title="Settle Order" />
     </group>
 
     <item android:title="Customer Relation">
         <menu>
             <item
-                android:id="@+id/nav_share"
-                android:icon="@drawable/ic_menu_share"
+                android:id="@+id/nav_feedback"
+                android:icon="@mipmap/ic_feedback_black_24dp"
                 android:title="Feedback" />
 
         </menu>

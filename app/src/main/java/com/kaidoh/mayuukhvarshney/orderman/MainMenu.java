@@ -61,7 +61,7 @@ public class MainMenu extends AppCompatActivity implements NavigationView.OnNavi
                 menuGrid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                        if (position == 0) {
+
 
                             LayoutInflater factory = LayoutInflater.from(MainMenu.this);
                             final View deleteDialogView = factory.inflate(
@@ -80,7 +80,7 @@ public class MainMenu extends AppCompatActivity implements NavigationView.OnNavi
                                 }
                             });
                             deleteDialog.show();
-                        }
+
                     }
                 });
                // menuGrid.setAdapter(adapter);
@@ -216,6 +216,10 @@ public class MainMenu extends AppCompatActivity implements NavigationView.OnNavi
     public boolean onNavigationItemSelected(MenuItem item) {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
+        if(item.getItemId()== id.nav_waiting){
+            Intent intent = new Intent(this,WaitingListActivity.class);
+            startActivity(intent );
+        }
         return true;
 
     }

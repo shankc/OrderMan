@@ -94,6 +94,15 @@ public class MenuListDetailActivity extends AppCompatActivity implements  Naviga
     public boolean onNavigationItemSelected(MenuItem item) {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
+        //
+        if(item.getItemId()==R.id.nav_home)
+        {
+            finish();
+        }
+        else if(item.getItemId()==R.id.nav_waiting)
+        {
+
+        }
         return true;
 
     }

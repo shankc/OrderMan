@@ -36,7 +36,7 @@ public class MenuListListActivity extends AppCompatActivity implements Navigatio
     private boolean mTwoPane;
     ArrayList<MenuCat> MenuList;
     TableLayout table;
-
+ int selected_position=0;
     TableRow tr_head;
     TextView label_name,label_intime,label_outtime,AmountToBePayed;
 
@@ -95,41 +95,6 @@ protected void onPostExecute(ArrayList<MenuCat >array){
         table.addView(tr_head, new TableLayout.LayoutParams(
                 TableLayout.LayoutParams.WRAP_CONTENT,
                 TableLayout.LayoutParams.WRAP_CONTENT));
-
-
-       /* int count =0;
-        for(int i=0;i<10;i++)
-        {
-
-            String Name=Integer.toString(i);
-            String Intime = Integer.toString(i+10);
-            String OutTime=Integer.toString(i + 1000);
-// Create the table row
-            TableRow tr = new TableRow(MenuListListActivity.this);
-            tr.setId(100 + count);
-            tr.setLayoutParams(new TableLayout.LayoutParams(
-                    TableLayout.LayoutParams.WRAP_CONTENT,
-                    TableLayout.LayoutParams.WRAP_CONTENT));
-
-            TextView names = new TextView(MenuListListActivity.this);
-            names.setId(200 + count);
-            names.setText(Name);
-            names.setPadding(55,45,45,45);
-            names.setTextColor(Color.BLACK);
-            tr.addView(names);
-
-            TextView in_time= new TextView(MenuListListActivity.this);
-            in_time.setId(200 + count);
-            in_time.setText((Intime));
-            in_time.setPadding(55,45,45,45);
-            in_time.setTextColor(Color.BLACK);
-            tr.addView(in_time);
-
-            table.addView(tr, new TableLayout.LayoutParams(
-                    TableLayout.LayoutParams.WRAP_CONTENT,
-                    TableLayout.LayoutParams.WRAP_CONTENT));
-            count++;
-        }*/
     }
 }.execute();
 
@@ -185,6 +150,7 @@ protected void onPostExecute(ArrayList<MenuCat >array){
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
         recyclerView.setAdapter(new SimpleItemRecyclerViewAdapter(MenuList));
+
     }
 
 
@@ -210,10 +176,21 @@ protected void onPostExecute(ArrayList<MenuCat >array){
           //  holder.mIdView.setText(mValues.get(position).id);
             holder.mContentView.setText(mValues.get(position).getName());
 
+            if(selected_position==position){
+                holder.mView.setBackgroundColor(Color.CYAN);
+            }
+            else {
+                holder.mView.setBackgroundColor(Color.TRANSPARENT);
+            }
+
             holder.mView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     if (mTwoPane) {
+
+                        notifyItemChanged(selected_position);
+                        selected_position = position;
+                        notifyItemChanged(selected_position);
                         Bundle arguments = new Bundle();
                         arguments.putString(MenuListDetailFragment.ARG_ITEM_ID, mValues.get(position).getId());
                         MenuListDetailFragment fragment = new MenuListDetailFragment();
@@ -239,14 +216,13 @@ protected void onPostExecute(ArrayList<MenuCat >array){
 
         public class ViewHolder extends RecyclerView.ViewHolder {
             public final View mView;
-            public final TextView mIdView;
+
             public final TextView mContentView;
             public String mItem;
 
             public ViewHolder(View view) {
                 super(view);
                 mView = view;
-                mIdView = (TextView) view.findViewById(R.id.id);
                 mContentView = (TextView) view.findViewById(R.id.content);
             }
 
@@ -271,6 +247,15 @@ protected void onPostExecute(ArrayList<MenuCat >array){
     public boolean onNavigationItemSelected(MenuItem item) {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
+        if(item.getItemId()==R.id.nav_home)
+        {
+            finish();
+        }
+        else if(item.getItemId()==R.id.nav_waiting)
+        {
+Intent intent = new Intent(MenuListListActivity.this,WaitingListActivity.class);
+            startActivity(intent);
+        }
         return true;
 
     }

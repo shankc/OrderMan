@@ -21,6 +21,8 @@ import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.TableLayout;
 
+import com.pnikosis.materialishprogress.ProgressWheel;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -39,7 +41,7 @@ public class MenuListDetailFragment extends Fragment {
      * represents.
      */
     ArrayList<MenuItems>CONTENT;//{"Dosa","Idly","Sambar","Masala Dosa"};
-   ArrayList<Bitmap>ICONS;//{R.mipmap.black_image,R.mipmap.black_image,R.mipmap.black_image,R.mipmap.black_image};
+   ArrayList<Integer>ICONS;//{R.mipmap.black_image,R.mipmap.black_image,R.mipmap.black_image,R.mipmap.black_image};
     private ItemsAdapter adapter;
     GridView menuGrid;
     protected int mPhotoSize, mPhotoSpacing;
@@ -57,6 +59,8 @@ private String ID;
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
      */
+    GridView grid ;
+    ProgressWheel prog;
     public MenuListDetailFragment() {
     }
 
@@ -86,14 +90,21 @@ CONTENT= new ArrayList<>();
         ICONS= new ArrayList<>();
 
 sum=0;
+       // grid = (GridView) rootView.findViewById(R.id.grid_view1);
+        //prog= (ProgressWheel) rootView.findViewById(R.id.progress_wheel);
+
+        //prog.spin();
         // Show the dummy content as text in a TextView.
         mPhotoSize = getResources().getDimensionPixelSize(R.dimen.photo_size);//
         mPhotoSpacing = getResources().getDimensionPixelSize(R.dimen.photo_spacing);
+
      new GetMenuCardItems(){
          @Override
         protected void onPostExecute(ArrayList<MenuItems> array){
              super.onPostExecute(array);
-
+             //prog.stopSpinning();
+            // prog.setVisibility(View.INVISIBLE);
+            // grid.setVisibility(View.VISIBLE);
              adapter= new ItemsAdapter(getActivity(),ICONS,CONTENT);
              menuGrid= (GridView) rootView.findViewById(R.id.grid_view1);
              menuGrid.setAdapter(adapter);
@@ -203,9 +214,38 @@ sum=0;
                     items.setImage(obj.getString("image"));
                     String temp = obj.getString("productprice");
                     items.setPrice(Float.parseFloat(temp));
-                    Log.d("MenuListDetailFRagment"," the float is "+temp);
+                    Log.d("MenuListDetailFRagment", " the float is " + temp);
                     CONTENT.add(items);
-                    ICONS.add(decodeBase64(obj.getString("image"))); // add a bitmap here !
+                   // ICONS.add(decodeBase64(obj.getString("image"))); // add a bitmap here !
+                    String tem = items.getItemName();
+                    switch(tem){
+                        case "Coffee":
+                            ICONS.add(R.mipmap.coffee);
+                            break;
+                        case "Harbel Tea":
+                            ICONS.add(R.mipmap.harbel_tea);
+                            break;
+                        case "Iced Tea":
+                            ICONS.add(R.mipmap.iced_tea);
+                            break;
+                        case "Juice":
+                            ICONS.add(R.mipmap.juice);
+                            break;
+                        case "Large Drinks":
+                            ICONS.add(R.mipmap.large_drinks);
+                            break;
+                        case "Milk":
+                            ICONS.add(R.mipmap.milk);
+                            break;
+                        case "Soft Drink":
+                            ICONS.add(R.mipmap.soft_drink);
+                            break;
+                        case "Tea":
+                            ICONS.add(R.mipmap.tea);
+                            break;
+                    }
+
+
                 }
                 return CONTENT;
 
