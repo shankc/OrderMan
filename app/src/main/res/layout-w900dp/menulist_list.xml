@@ -41,9 +41,13 @@
         android:layout_height="wrap_content">
     <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
-        android:layout_height="360dp"
+        android:layout_height="0dp"
         android:scrollbars="none"
-        android:id="@+id/scroller">
+        android:id="@+id/scroller"
+        android:layout_above="@+id/my_toolbar"
+        android:layout_weight="100"
+        android:layout_alignParentTop="true">
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -95,7 +99,7 @@
 
                 />
             <android.support.design.widget.FloatingActionButton
-                android:id="@+id/fab"
+                android:id="@+id/send_order"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom|end"
@@ -115,7 +119,7 @@
 
                 android:layout_marginLeft="@dimen/fab_margin"
                 android:layout_marginRight="@dimen/fab_margin"
-                android:layout_alignTop="@+id/fab"
+                android:layout_alignTop="@+id/send_order"
                 android:layout_alignEnd="@+id/amt_text" />
 
         </RelativeLayout>

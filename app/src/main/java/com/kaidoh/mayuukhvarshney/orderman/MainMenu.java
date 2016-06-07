@@ -8,6 +8,7 @@ package com.kaidoh.mayuukhvarshney.orderman;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
@@ -21,6 +22,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.GridView;
 
 import org.json.JSONArray;
@@ -40,6 +42,8 @@ public class MainMenu extends AppCompatActivity implements NavigationView.OnNavi
     private ImageAdapter adapter;
     GridView menuGrid;
     Dialog dialog;
+    EditText Capicity;
+    String quantity_text="";
     protected int mPhotoSize, mPhotoSpacing;
     @Override
    protected void onCreate(Bundle savedInstanceState){
@@ -58,29 +62,49 @@ public class MainMenu extends AppCompatActivity implements NavigationView.OnNavi
                 super.onPostExecute(content);
                 adapter= new ImageAdapter(MainMenu.this,ICONS,CONTENT);
                 menuGrid.setAdapter(adapter);
+
+
+
                 menuGrid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
-                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
 
+                        if (CONTENT.get(position).getStatus()) {
+                            Tables table = new Tables();
+                            table = CONTENT.get(position);
+                            Intent intent = new Intent(MainMenu.this, MenuListListActivity.class);
+                            intent.putExtra("TableId", table.getId());
+                            //intent.putExtra("TableCapacity", quantity_text);
+                            startActivity(intent);
+                        }
 
+                        else {
                             LayoutInflater factory = LayoutInflater.from(MainMenu.this);
                             final View deleteDialogView = factory.inflate(
                                     layout.quantity_dialog, null);
                             final AlertDialog deleteDialog = new AlertDialog.Builder(MainMenu.this).create();
                             deleteDialog.setView(deleteDialogView);
                             deleteDialog.setTitle("Number of Persons?");
+                            Capicity = (EditText) deleteDialogView.findViewById(R.id.qnt_text);
+
                             deleteDialogView.findViewById(R.id.dialogButtonOK).setOnClickListener(new View.OnClickListener() {
 
                                 @Override
                                 public void onClick(View v) {
                                     //your business logic
+                                    quantity_text = Capicity.getText().toString();
                                     deleteDialog.dismiss();
+                                    Tables table = new Tables();
+                                    table = CONTENT.get(position);
                                     Intent intent = new Intent(MainMenu.this, MenuListListActivity.class);
+                                    intent.putExtra("TableId", table.getId());
+                                    intent.putExtra("TableCapacity", quantity_text);
                                     startActivity(intent);
                                 }
                             });
                             deleteDialog.show();
 
+                        }
                     }
                 });
                // menuGrid.setAdapter(adapter);
@@ -185,11 +209,22 @@ public class MainMenu extends AppCompatActivity implements NavigationView.OnNavi
                 for(int i=0;i<array.length();i++){
                     Tables table = new Tables();
                     o =array.getJSONObject(i);
+
                     table.setCapacity(o.getString("capacity"));
                     table.setId(o.getString("id"));
                     table.setName(o.getString("name"));
+                    table.setStatus(o.getBoolean("status"));
+                    SharedPreferences datastore= getSharedPreferences("DataStorage", 0);
+                    SharedPreferences.Editor editor=datastore.edit();
                     CONTENT.add(table);
-                    ICONS.add(R.mipmap.default_green);
+                    if(table.getStatus()){
+                        ICONS.add(R.mipmap.red_image);
+                    }
+                    else
+                    {
+                        ICONS.add(R.mipmap.default_green);
+                    }
+                  //  ICONS.add(R.mipmap.default_green);
                     Log.d("MainMenu","the array is "+CONTENT.get(i));
 
 

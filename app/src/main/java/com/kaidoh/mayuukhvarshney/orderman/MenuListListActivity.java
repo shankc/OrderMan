@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -26,7 +27,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-
 public class MenuListListActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     /**
@@ -35,20 +35,40 @@ public class MenuListListActivity extends AppCompatActivity implements Navigatio
      */
     private boolean mTwoPane;
     ArrayList<MenuCat> MenuList;
+    ArrayList<MenuItems> BillDetails;
     TableLayout table;
  int selected_position=0;
     TableRow tr_head;
     TextView label_name,label_intime,label_outtime,AmountToBePayed;
-
+    FloatingActionButton SendOrder,SettleOrderButton;
+    String ID=""; int NumberOfPeople=0;
+    Boolean TableFull=false;
+    int TotalAmount =0;
+    JSONArray orderItems;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.mainmenu_navi_drawer);
   MenuList= new ArrayList<>();
+        BillDetails= new ArrayList<>();
+        orderItems = new JSONArray();
         //Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         //setSupportActionBar(toolbar);
         //toolbar.setTitle(getTitle());
         AmountToBePayed= (TextView) findViewById(R.id.amount);
+        if (savedInstanceState == null) {
+            Bundle extras = getIntent().getExtras();
+            if(extras == null) {
+
+            } else {
+                ID = extras.getString("TableId");
+               // NumberOfPeople=extras.getInt("Capacity");
+                //Log.d("LeaveForm"," the regid is => "+NumberOfPeople);
+            }
+        } else {
+            ID= (String) savedInstanceState.getSerializable("AbsentName");
+            NumberOfPeople=(int)savedInstanceState.getSerializable("RegId");
+        }
 
 new GetMenuCategories(){
     @Override
@@ -64,6 +84,11 @@ protected void onPostExecute(ArrayList<MenuCat >array){
             // activity should be in two-pane mode.
             mTwoPane = true;
         }
+
+        // get bill beforehand if any available.
+
+
+
         // insert table view
         table = (TableLayout) findViewById(R.id.main_table);
         //  Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -97,7 +122,65 @@ protected void onPostExecute(ArrayList<MenuCat >array){
                 TableLayout.LayoutParams.WRAP_CONTENT));
     }
 }.execute();
+        new GetBill(){
+            @Override
+            protected  void onPostExecute(ArrayList<MenuItems> array) {
+                super.onPostExecute(array);
+                int count = 0;
+                int sum =0;
 
+                if (array.size() != 0) {
+
+                    JSONObject obj = new JSONObject();
+                    for (int i = 0; i < array.size(); i++) {
+                        TotalAmount+=(array.get(i).getPrice()*array.get(i).getQuantity());
+                        TableRow tr = new TableRow(MenuListListActivity.this);
+                        tr.setId(100 + count);
+                        tr.setLayoutParams(new TableLayout.LayoutParams(
+                                TableLayout.LayoutParams.WRAP_CONTENT,
+                                TableLayout.LayoutParams.WRAP_CONTENT));
+
+                        try{
+                            obj.put("productid",BillDetails.get(i).getId());
+                            obj.put("name",BillDetails.get(i).getItemName());
+                            //obj.put("orderid",BillDetails.get(i).getOrderId());
+                            obj.put("price",BillDetails.get(i).getPrice());
+                            obj.put("quantity",BillDetails.get(i).getQuantity());
+                            obj.put("Amount",BillDetails.get(i).getQuantity()*BillDetails.get(i).getPrice());
+
+                        }
+                        catch(Exception e){
+                            e.printStackTrace();
+                        }
+
+                        TextView names = new TextView(MenuListListActivity.this);
+                        names.setId(200 + count);
+                        names.setText(Integer.toString(array.get(i).getQuantity()));
+                        names.setPadding(55, 45, 45, 45);
+                        names.setTextColor(Color.BLACK);
+                        tr.addView(names);
+
+                        TextView in_time = new TextView(MenuListListActivity.this);
+                        in_time.setId(200 + count);
+                        in_time.setText((array.get(i).getItemName()));
+                        in_time.setPadding(55, 45, 45, 45);
+                        in_time.setTextColor(Color.BLACK);
+                        tr.addView(in_time);
+
+                        table.addView(tr, new TableLayout.LayoutParams(
+                                TableLayout.LayoutParams.WRAP_CONTENT,
+                                TableLayout.LayoutParams.WRAP_CONTENT));
+                        count++;
+
+                        orderItems.put(obj);
+
+                    }
+
+                    AmountToBePayed.setText(Integer.toString(TotalAmount));
+                }
+            }
+
+        }.execute();
 
 
 
@@ -116,7 +199,29 @@ protected void onPostExecute(ArrayList<MenuCat >array){
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(MenuListListActivity.this);
+
+        SettleOrderButton= (FloatingActionButton) findViewById(R.id.settle_order);
+        SendOrder = (FloatingActionButton) findViewById(R.id.send_order);
+
+        SendOrder.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+
+        SettleOrderButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+
+
+
     }
+
+
 
     class GetMenuCategories extends AsyncTask<Void,Void,ArrayList<MenuCat>>{
 
@@ -130,20 +235,63 @@ protected void onPostExecute(ArrayList<MenuCat >array){
                 JSONArray array = object.getJSONArray("categories");
                 Log.d("MenuListActivity","the array => "+array);
                 JSONObject obj =null;
-                for(int i=0;i<array.length();i++){
-                    MenuCat menu = new MenuCat();
-                    obj=array.getJSONObject(i);
-                    menu.setName(obj.getString("name"));
-                    menu.setId(obj.getString("id"));
-                    menu.setStatus(obj.getBoolean("status"));
-                    MenuList.add(menu);
+
+                if(array.length()!=0) {
+
+                    for (int i = 0; i < array.length(); i++) {
+                        MenuCat menu = new MenuCat();
+                        obj = array.getJSONObject(i);
+                        menu.setName(obj.getString("name"));
+                        menu.setId(obj.getString("id"));
+                        menu.setStatus(obj.getBoolean("status"));
+                        MenuList.add(menu);
+                    }
+
                 }
                 return MenuList;
-
             }
             catch(JSONException e){
                 e.printStackTrace();
             }
+            return null;
+        }
+    }
+
+    class GetBill extends AsyncTask<Void,Void,ArrayList<MenuItems>>{
+
+        @Override
+        protected ArrayList<MenuItems> doInBackground(Void... params) {
+
+            String URL =Config.URL+"order/getordersfortable/"+ID;
+            String content = HttpManager.GetData(URL);
+            try {
+                JSONArray array = new JSONArray(content);
+                JSONObject obj =new JSONObject();
+                obj = null;
+                for(int i=0;i<array.length();i++)
+                {
+                    MenuItems items = new MenuItems();
+                    obj= array.getJSONObject(i);
+                    items.setOrderId(obj.getInt("orderid"));
+                    items.setItemName(obj.getString("name"));
+                    String temp = obj.getString("price");
+                    items.setPrice(Float.parseFloat(temp));
+                    items.setId(obj.getString("productid"));
+                    items.setQuantity(obj.getInt("quantity"));
+
+                    BillDetails.add(items);
+
+
+
+                }
+
+                return BillDetails;
+
+            }
+            catch (JSONException e){
+                e.printStackTrace();
+            }
+
             return null;
         }
     }

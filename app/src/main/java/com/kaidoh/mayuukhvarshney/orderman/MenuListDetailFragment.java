@@ -17,9 +17,10 @@ import android.view.ViewTreeObserver;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.GridView;
+import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
-import android.widget.TableLayout;
+import android.widget.Toast;
 
 import com.pnikosis.materialishprogress.ProgressWheel;
 
@@ -29,12 +30,9 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-/**
- * A fragment representing a single MenuList detail screen.
- * This fragment is either contained in a {@link MenuListListActivity}
- * in two-pane mode (on tablets) or a {@link MenuListDetailActivity}
- * on handsets.
- */
+import okhttp3.MediaType;
+
+
 public class MenuListDetailFragment extends Fragment {
     /**
      * The fragment argument representing the item ID that this fragment
@@ -47,6 +45,8 @@ public class MenuListDetailFragment extends Fragment {
     protected int mPhotoSize, mPhotoSpacing;
     int quantiy=0;
    EditText quantity_entered;
+    Float Itemprice;
+    String ItemID="";
     public static final String ARG_ITEM_ID = "item_id";
 private String ID;
     String ItemName="";
@@ -55,12 +55,12 @@ private String ID;
     TableRow tr_head;
     TextView label_name,label_intime,label_outtime;
     int sum=0;
-    /**
-     * Mandatory empty constructor for the fragment manager to instantiate the
-     * fragment (e.g. upon screen orientation changes).
-     */
+  JSONArray ItemArray;
     GridView grid ;
     ProgressWheel prog;
+    JSONObject SettleOrder;
+    public static final MediaType JSON
+            = MediaType.parse("application/json; charset=utf-8");
     public MenuListDetailFragment() {
     }
 
@@ -76,8 +76,9 @@ private String ID;
 
             Bundle bundle = MenuListDetailFragment.this.getArguments();
             ID=bundle.getString(ARG_ITEM_ID);
-            Log.d("MenuListFrag","the ID recvied is "+ID);
+            Log.d("MenuListFrag", "the ID recvied is " + ID);
             Activity activity = this.getActivity();
+
 
         }
     }
@@ -88,8 +89,10 @@ private String ID;
         rootView = inflater.inflate(R.layout.menu_and_order, container, false);
 CONTENT= new ArrayList<>();
         ICONS= new ArrayList<>();
+       ItemArray= new JSONArray();
+        SettleOrder = new JSONObject();
 
-sum=0;
+sum=((MenuListListActivity)getActivity()).TotalAmount;
        // grid = (GridView) rootView.findViewById(R.id.grid_view1);
         //prog= (ProgressWheel) rootView.findViewById(R.id.progress_wheel);
 
@@ -141,9 +144,37 @@ sum=0;
                              //your business logic
                              String temp = quantity_entered.getText().toString();
                              Log.d("MenuListFragment"," the quanitty tentered"+temp);
+
+
                              quantiy=Integer.parseInt(temp);
                              ItemName=CONTENT.get(position).getItemName();
                              sum+=(quantiy*CONTENT.get(position).getPrice());
+
+                            // JSONArray array = new JSONArray();
+                             JSONObject obj = new JSONObject();
+
+                             try{
+                                 float amt =0;
+                                  amt = CONTENT.get(position).getPrice()*quantiy;
+                                 Log.d("MenuListDetailFragment", " the object data" + CONTENT.get(position).getId());
+                                 obj.put("productid", CONTENT.get(position).getId());
+                                 Log.d("MenuListDetailFragment", " the object data" + CONTENT.get(position).getId());
+                                 obj.put("name", CONTENT.get(position).getItemName());
+                                 Log.d("MenuListDetailFragment", " the object data" + CONTENT.get(position).getItemName());
+                                 obj.put("quantity", quantiy);
+                                 Log.d("MenuListDetailFragment", " the object data" + quantiy);
+                                 obj.put("price", CONTENT.get(position).getPrice());
+                                 Log.d("MenuListFragment "," the object data is "+CONTENT.get(position).getPrice());
+                                 obj.put("amount",amt);
+                             }
+                             catch(JSONException e ){
+                                 e.printStackTrace();
+                             }
+
+
+                             ((MenuListListActivity)getActivity()).orderItems.put(obj); //settle order JSON array
+
+                             ItemArray.put(obj); // place order JSONarray
                              deleteDialog.dismiss();
                              getActivity().runOnUiThread(new Runnable() {
                                  @Override
@@ -173,6 +204,7 @@ sum=0;
                                              TableLayout.LayoutParams.WRAP_CONTENT));
                                      count++;
                                      ((MenuListListActivity)getActivity()).AmountToBePayed.setText(Integer.toString(sum));
+
                                  }
                              });
 
@@ -191,7 +223,121 @@ sum=0;
         //.
     //}
 
+        ((MenuListListActivity)getActivity()).SendOrder.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                JSONObject object = new JSONObject();
+
+                String tableid= ((MenuListListActivity)getActivity()).ID;
+                try{
+                object.put("tableid",tableid);
+                  object.put("orderdetails",ItemArray);
+                    object.put("Total",sum);
+                    if(((MenuListListActivity)getActivity()).BillDetails.size()==0){
+                        object.put("orderid",0);
+                    }
+                    else
+                    {
+                        object.put("orderid",((MenuListListActivity)getActivity()).BillDetails.get(0).getOrderId());
+                    }
+                }
+                catch(JSONException e)
+                {
+                    e.printStackTrace();
+                }
+                String postJson= object.toString();
+                new SendOrderPost(postJson).execute();
+            }
+        });
+
+        ((MenuListListActivity)getActivity()).SettleOrderButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d("Fragmentplace "," the button clicked");
+                JSONObject object = new JSONObject();
+                String tableid= ((MenuListListActivity)getActivity()).ID;
+                try{
+                    object.put("tableid",tableid);
+                    object.put("orderdetails",((MenuListListActivity)getActivity()).orderItems);
+                    object.put("Total",sum);
+                    if(((MenuListListActivity)getActivity()).BillDetails.size()==0){
+                        object.put("orderid",0);
+                    }
+                    else
+                    {
+                        object.put("orderid",((MenuListListActivity)getActivity()).BillDetails.get(0).getOrderId());
+                    }
+                }
+                catch(JSONException e){
+                    e.printStackTrace();
+                }
+
+                String postJSon = object.toString();
+                new SettleOrderPost(postJSon).execute();
+            }
+        });
+
+
         return rootView;
+    }
+
+    class SendOrderPost extends AsyncTask<Void,Void,Boolean>{
+
+        String json ="";
+
+        protected SendOrderPost(String j){
+            this.json=j;
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+
+            String URL = Config.URL+"order/postorder";
+            String content =HttpManager.PostObject(URL, json);
+            Log.d("MenuListFragment","the posted respnse "+content);
+            Boolean result = Boolean.parseBoolean(content);
+
+            return result;
+        }
+        @Override
+        protected void onPostExecute(Boolean result){
+            super.onPostExecute(result);
+            if(result){
+                Toast.makeText(getActivity(),"The Order Was Placed Successfully :)",Toast.LENGTH_SHORT).show();
+            }
+            else
+            {
+                Toast.makeText(getActivity(),"Error Has Occurred :(",Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+
+    class SettleOrderPost extends AsyncTask<Void,Void,Boolean>{
+        String json ="";
+protected  SettleOrderPost(String j){this.json = j;}
+        @Override
+        protected Boolean doInBackground(Void... params) {
+
+            String URL = Config.URL+"order/postfinalorder";
+            String content = HttpManager.PostObject(URL,json);
+            Log.d("MenuListFragment", "the posted response " + content);
+            Boolean result = Boolean.parseBoolean(content);
+            return result;
+
+        }
+        @Override
+            protected void onPostExecute(Boolean result){
+            super.onPostExecute(result);
+            if(result){
+                Toast.makeText(getActivity(),"The Order Settled Successfully :)",Toast.LENGTH_SHORT).show();
+            }
+            else
+            {
+                Toast.makeText(getActivity(),"Error Has Occurred :(",Toast.LENGTH_SHORT).show();
+            }
+        }
+
     }
 
     class GetMenuCardItems extends AsyncTask<Void,Void,ArrayList<MenuItems>>{
@@ -214,7 +360,6 @@ sum=0;
                     items.setImage(obj.getString("image"));
                     String temp = obj.getString("productprice");
                     items.setPrice(Float.parseFloat(temp));
-                    Log.d("MenuListDetailFRagment", " the float is " + temp);
                     CONTENT.add(items);
                    // ICONS.add(decodeBase64(obj.getString("image"))); // add a bitmap here !
                     String tem = items.getItemName();
