@@ -295,9 +295,18 @@ sum=((MenuListListActivity)getActivity()).TotalAmount;
             String URL = Config.URL+"order/postorder";
             String content =HttpManager.PostObject(URL, json);
             Log.d("MenuListFragment","the posted respnse "+content);
-            Boolean result = Boolean.parseBoolean(content);
+            Boolean result;
+            try {
+                JSONObject object = new JSONObject(content);
+                result = object.getBoolean("Result");
 
-            return result;
+                return result;
+            }
+            catch(JSONException e){
+                e.printStackTrace();
+            }
+
+            return false;
         }
         @Override
         protected void onPostExecute(Boolean result){
@@ -322,9 +331,17 @@ protected  SettleOrderPost(String j){this.json = j;}
             String URL = Config.URL+"order/postfinalorder";
             String content = HttpManager.PostObject(URL,json);
             Log.d("MenuListFragment", "the posted response " + content);
-            Boolean result = Boolean.parseBoolean(content);
-            return result;
+            Boolean result;
+            try {
+                JSONObject object = new JSONObject(content);
+                result = object.getBoolean("Result");
 
+                return result;
+            }
+            catch(JSONException e){
+                e.printStackTrace();
+            }
+        return false;
         }
         @Override
             protected void onPostExecute(Boolean result){

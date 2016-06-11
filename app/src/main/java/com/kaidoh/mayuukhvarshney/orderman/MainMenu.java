@@ -7,8 +7,11 @@ package com.kaidoh.mayuukhvarshney.orderman;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
@@ -24,6 +27,7 @@ import android.view.ViewTreeObserver;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.GridView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -37,32 +41,42 @@ import static com.kaidoh.mayuukhvarshney.orderman.R.string;
 
 public class MainMenu extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     ArrayList<Tables> CONTENT;//{"Dosa","Idly","Sambar","Masala Dosa"};
-    ArrayList<Integer>ICONS;
+    ArrayList<Integer> ICONS;
     //{R.mipmap.black_image,R.mipmap.black_image,R.mipmap.black_image,R.mipmap.black_image};
     private ImageAdapter adapter;
     GridView menuGrid;
     Dialog dialog;
     EditText Capicity;
-    String quantity_text="";
+    String quantity_text = "";
     protected int mPhotoSize, mPhotoSpacing;
+
     @Override
-   protected void onCreate(Bundle savedInstanceState){
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(layout.navigation_main);
-        menuGrid= (GridView) findViewById(id.grid_view_menu);
+        menuGrid = (GridView) findViewById(id.grid_view_menu);
 
         mPhotoSize = getResources().getDimensionPixelSize(R.dimen.photo_size);
         mPhotoSpacing = getResources().getDimensionPixelSize(R.dimen.photo_spacing);
 
-        CONTENT= new ArrayList<>();
-        ICONS= new ArrayList<>();
-        new GetTables(){
-            @Override
-            protected void onPostExecute(ArrayList<Tables> content){
-                super.onPostExecute(content);
-                adapter= new ImageAdapter(MainMenu.this,ICONS,CONTENT);
-                menuGrid.setAdapter(adapter);
+        CONTENT = new ArrayList<>();
+        ICONS = new ArrayList<>();
+        ConnectivityManager cm =
+                (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
 
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        boolean isConnected = activeNetwork != null &&
+                activeNetwork.isConnectedOrConnecting();
+        if (isConnected) {
+            Log.d("MainMenu", " internet available ");
+
+        new GetTables() {
+            @Override
+            protected void onPostExecute(ArrayList<Tables> content) {
+                super.onPostExecute(content);
+
+                adapter = new ImageAdapter(MainMenu.this, ICONS, CONTENT);
+                menuGrid.setAdapter(adapter);
 
 
                 menuGrid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -76,9 +90,7 @@ public class MainMenu extends AppCompatActivity implements NavigationView.OnNavi
                             intent.putExtra("TableId", table.getId());
                             //intent.putExtra("TableCapacity", quantity_text);
                             startActivity(intent);
-                        }
-
-                        else {
+                        } else {
                             LayoutInflater factory = LayoutInflater.from(MainMenu.this);
                             final View deleteDialogView = factory.inflate(
                                     layout.quantity_dialog, null);
@@ -107,7 +119,7 @@ public class MainMenu extends AppCompatActivity implements NavigationView.OnNavi
                         }
                     }
                 });
-               // menuGrid.setAdapter(adapter);
+                // menuGrid.setAdapter(adapter);
                 menuGrid.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                     @Override
                     public void onGlobalLayout() {
@@ -164,13 +176,11 @@ public class MainMenu extends AppCompatActivity implements NavigationView.OnNavi
                 MainMenu.this, drawer, null, string.navigation_drawer_open, string.navigation_drawer_close);
 
 
-       if(drawer!=null)
-       {
-        drawer.setDrawerListener(toggle);
-        toggle.syncState();}
-        else
-        {
-            Log.d("MainMenu","the drawer has a probelm");
+        if (drawer != null) {
+            drawer.setDrawerListener(toggle);
+            toggle.syncState();
+        } else {
+            Log.d("MainMenu", "the drawer has a probelm");
         }
 
         NavigationView navigationView = (NavigationView) findViewById(id.nav_view);
@@ -194,6 +204,11 @@ public class MainMenu extends AppCompatActivity implements NavigationView.OnNavi
             }
         });*/
     }
+        else
+        {
+            Toast.makeText(this,"Check Network Connection ",Toast.LENGTH_SHORT).show();
+        }
+}
     class GetTables extends AsyncTask<Void,Void,ArrayList<Tables>>{
 
         @Override

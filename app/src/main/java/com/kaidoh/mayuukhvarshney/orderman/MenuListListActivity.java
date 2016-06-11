@@ -84,6 +84,14 @@ protected void onPostExecute(ArrayList<MenuCat >array){
             // activity should be in two-pane mode.
             mTwoPane = true;
         }
+        Bundle arguments = new Bundle();
+        arguments.putString(MenuListDetailFragment.ARG_ITEM_ID, MenuList.get(0).getId());
+
+        MenuListDetailFragment fragment = new MenuListDetailFragment();
+        fragment.setArguments(arguments);
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.menulist_detail_container, fragment)
+                .commit();
 
         // get bill beforehand if any available.
 
