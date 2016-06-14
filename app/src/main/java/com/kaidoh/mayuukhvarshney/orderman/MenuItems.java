@@ -12,6 +12,7 @@ public class MenuItems {
     private String Image;
     private Integer OrderId;
     private Integer Quantity;
+    private String ImageURL;
 
 
     public void setId(String id){
@@ -23,6 +24,9 @@ public class MenuItems {
     public void setCategoryId(String catID){
         this.CategoryId=catID;
 
+    }
+    public void setImageURL(String Image){
+        this.ImageURL=Image;
     }
     public void setOrderId(Integer order){
         this.OrderId= order;
@@ -60,6 +64,9 @@ public class MenuItems {
     public String getImage(){
         return this.Image;
 
+    }
+    public String getImageURL(){
+        return this.ImageURL;
     }
     public Integer getQuantity(){
         return this.Quantity;

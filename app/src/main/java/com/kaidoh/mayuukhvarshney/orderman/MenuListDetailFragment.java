@@ -17,11 +17,14 @@ import android.view.ViewTreeObserver;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.GridView;
+import android.widget.ImageView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 import com.pnikosis.materialishprogress.ProgressWheel;
 
 import org.json.JSONArray;
@@ -29,6 +32,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import okhttp3.MediaType;
 
@@ -39,7 +43,7 @@ public class MenuListDetailFragment extends Fragment {
      * represents.
      */
     ArrayList<MenuItems>CONTENT;//{"Dosa","Idly","Sambar","Masala Dosa"};
-   ArrayList<Integer>ICONS;//{R.mipmap.black_image,R.mipmap.black_image,R.mipmap.black_image,R.mipmap.black_image};
+   ArrayList<Bitmap>ICONS;//{R.mipmap.black_image,R.mipmap.black_image,R.mipmap.black_image,R.mipmap.black_image};
     private ItemsAdapter adapter;
     GridView menuGrid;
     protected int mPhotoSize, mPhotoSpacing;
@@ -59,6 +63,7 @@ private String ID;
     GridView grid ;
     ProgressWheel prog;
     JSONObject SettleOrder;
+    HashMap<String,Float> PriceStorage;
     public static final MediaType JSON
             = MediaType.parse("application/json; charset=utf-8");
     public MenuListDetailFragment() {
@@ -78,6 +83,9 @@ private String ID;
             ID=bundle.getString(ARG_ITEM_ID);
             Log.d("MenuListFrag", "the ID recvied is " + ID);
             Activity activity = this.getActivity();
+            ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(getActivity()).build();
+            ImageLoader.getInstance().init(config);
+
 
 
         }
@@ -90,6 +98,7 @@ private String ID;
 CONTENT= new ArrayList<>();
         ICONS= new ArrayList<>();
        ItemArray= new JSONArray();
+        PriceStorage = new HashMap();
         SettleOrder = new JSONObject();
 
 sum=((MenuListListActivity)getActivity()).TotalAmount;
@@ -156,15 +165,15 @@ sum=((MenuListListActivity)getActivity()).TotalAmount;
                              try{
                                  float amt =0;
                                   amt = CONTENT.get(position).getPrice()*quantiy;
-                                 Log.d("MenuListDetailFragment", " the object data" + CONTENT.get(position).getId());
+
                                  obj.put("productid", CONTENT.get(position).getId());
-                                 Log.d("MenuListDetailFragment", " the object data" + CONTENT.get(position).getId());
+
                                  obj.put("name", CONTENT.get(position).getItemName());
-                                 Log.d("MenuListDetailFragment", " the object data" + CONTENT.get(position).getItemName());
+
                                  obj.put("quantity", quantiy);
-                                 Log.d("MenuListDetailFragment", " the object data" + quantiy);
+
                                  obj.put("price", CONTENT.get(position).getPrice());
-                                 Log.d("MenuListFragment "," the object data is "+CONTENT.get(position).getPrice());
+
                                  obj.put("amount",amt);
                              }
                              catch(JSONException e ){
@@ -179,25 +188,43 @@ sum=((MenuListListActivity)getActivity()).TotalAmount;
                              getActivity().runOnUiThread(new Runnable() {
                                  @Override
                                  public void run() {
-                                     TableRow tr = new TableRow(getActivity());
+                                     final TableRow tr = new TableRow(getActivity());
                                      tr.setId(100 + count);
                                      tr.setLayoutParams(new TableLayout.LayoutParams(
                                              TableLayout.LayoutParams.WRAP_CONTENT,
                                              TableLayout.LayoutParams.WRAP_CONTENT));
 
-                                     TextView names = new TextView(getActivity());
+                                   final  TextView names = new TextView(getActivity());
                                      names.setId(200 + count);
                                      names.setText(Integer.toString(quantiy));
                                      names.setPadding(55, 45, 45, 45);
                                      names.setTextColor(Color.BLACK);
                                      tr.addView(names);
 
-                                     TextView in_time= new TextView(getActivity());
+                                    final TextView in_time= new TextView(getActivity());
                                      in_time.setId(200 + count);
                                      in_time.setText((ItemName));
                                      in_time.setPadding(55, 45, 45, 45);
                                      in_time.setTextColor(Color.BLACK);
                                      tr.addView(in_time);
+
+                                    final ImageView cancel= new ImageView(getActivity());
+                                     cancel.setId(200+count);
+                                     cancel.setImageResource(android.R.drawable.ic_delete);
+                                     cancel.setPadding(55,35,45,30);
+                                     tr.addView(cancel);
+
+                                     cancel.setOnClickListener(new View.OnClickListener() {
+                                         @Override
+                                         public void onClick(View v) {
+                                             tr.removeView(cancel);
+                                             tr.removeView(in_time);
+                                             tr.removeView(names);
+                                             sum-=(Integer.parseInt(names.getText().toString())*PriceStorage.get(in_time.getText().toString()));
+                                             Log.d("MenuListDetailFragment","the new sum => "+sum+" "+in_time.getText().toString());
+                                             ((MenuListListActivity)getActivity()).AmountToBePayed.setText(Integer.toString(sum));
+                                         }
+                                     });
 
                                      ((MenuListListActivity)getActivity()).table.addView(tr, new TableLayout.LayoutParams(
                                              TableLayout.LayoutParams.WRAP_CONTENT,
@@ -374,13 +401,21 @@ protected  SettleOrderPost(String j){this.json = j;}
                     items.setCategoryId(obj.getString("categoryid"));
                     items.setItemName(obj.getString("productname"));
                     items.setItemDescription(obj.getString("productdesc"));
-                    items.setImage(obj.getString("image"));
+                    //items.setImage(obj.getString("image"));
+
+                    String ImageURL="http://simsapi.perennialcode.com"+obj.getString("imageurl");
+                    Log.d("MenuDetailFragment"," the url is => "+ImageURL);
+                    items.setImageURL(ImageURL);
                     String temp = obj.getString("productprice");
+
                     items.setPrice(Float.parseFloat(temp));
                     CONTENT.add(items);
+                    //Picasso.with(getActivity()).load(items.getImageURL()).into();
+                    PriceStorage.put(items.getItemName(),items.getPrice());
                    // ICONS.add(decodeBase64(obj.getString("image"))); // add a bitmap here !
                     String tem = items.getItemName();
-                    switch(tem){
+
+                    /*switch(tem){
                         case "Coffee":
                             ICONS.add(R.mipmap.coffee);
                             break;
@@ -405,7 +440,7 @@ protected  SettleOrderPost(String j){this.json = j;}
                         case "Tea":
                             ICONS.add(R.mipmap.tea);
                             break;
-                    }
+                    }*/
 
 
                 }
@@ -427,4 +462,5 @@ protected  SettleOrderPost(String j){this.json = j;}
         return BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
 
     }
+
 }

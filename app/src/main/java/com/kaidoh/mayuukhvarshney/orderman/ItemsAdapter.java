@@ -1,6 +1,10 @@
 package com.kaidoh.mayuukhvarshney.orderman;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +16,7 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 /**
  * Created by mayuukhvarshney on 31/05/16.
@@ -24,10 +29,10 @@ public class ItemsAdapter extends BaseAdapter {
     private int Len;
     //private int []ICONS=new int[4];
     // private String[] CONTENT=new String[4];
-    ArrayList<Integer> ICONS;
+    ArrayList<Bitmap> ICONS;
     ArrayList<MenuItems> CONTENT;
     protected Context mContext;
-    public ItemsAdapter(Context context,ArrayList<Integer> img,ArrayList<MenuItems> txt) {
+    public ItemsAdapter(Context context,ArrayList<Bitmap> img,ArrayList<MenuItems> txt) {
         mContext=context;
         mInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         mImageViewLayoutParams = new RelativeLayout.LayoutParams(LayoutParams.FILL_PARENT,mItemHeight);
@@ -83,16 +88,39 @@ public class ItemsAdapter extends BaseAdapter {
         if (cover.getLayoutParams().height != mItemHeight) {
             cover.setLayoutParams(mImageViewLayoutParams);
         }
-        //cover.setImageResource(ICONS[position % ICONS.length]);
-
-        Picasso.with(mContext).load(ICONS.get(position % ICONS.size())).into(cover);
-      //  cover.setImageBitmap(ICONS.get(position%ICONS.size()));
-
-        //cover.setImageBitmap(ICONS.get(position%ICONS.size()));
+        Picasso.with(mContext).load(CONTENT.get(position).getImageURL()).into(cover);
+     // cover.setImageBitmap(ICONS.get(position%ICONS.size()));
         title.setText(CONTENT.get(position%CONTENT.size()).getItemName());
         capcity.setText(CONTENT.get(position%CONTENT.size()).getPrice().toString());
 
 
         return view;
+    }
+
+
+  class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
+        ImageView bmImage;
+
+        public DownloadImageTask(ImageView bmImage) {
+            this.bmImage = bmImage;
+
+        }
+
+        protected Bitmap doInBackground(String... urls) {
+            String urldisplay = urls[0];
+            Bitmap mIcon11 = null;
+            try {
+                InputStream in = new java.net.URL(urldisplay).openStream();
+                mIcon11 = BitmapFactory.decodeStream(in);
+            } catch (Exception e) {
+                Log.e("Error", e.getMessage());
+                e.printStackTrace();
+            }
+            return mIcon11;
+        }
+
+        protected void onPostExecute(Bitmap result) {
+            bmImage.setImageBitmap(result);
+        }
     }
 }
